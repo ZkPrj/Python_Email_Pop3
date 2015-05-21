@@ -1,0 +1,47 @@
+import poplib
+import os
+import email.header
+import email
+from time import sleep
+
+g_cmd_list = ["ping", "注销",  "时间"];
+
+#接收邮件，并返回主题
+def rcv_mail():
+    l_pop_conn = poplib.POP3("pop.163.com");#连接服务器
+    l_pop_conn.user("xxxx@163.com");#登录验证
+    l_pop_conn.pass_("xxxxxxxxxx");
+    l_msg = l_pop_conn.retr(l_pop_conn.stat()[0])[1];#获取最新的邮件
+    #l_msg_str = b'\n'.join(l_msg);
+    #l_msg_str = parser.Parser().parsestr(l_msg_str);
+    l_msg = b'\n'.join(l_msg);
+    l_msg = email.message_from_bytes(l_msg);
+    l_msg = email.header.decode_header(l_msg['subject']);
+    if None != l_msg[0][1]:
+        l_subject_str = l_msg[0][0].decode(l_msg[0][1]);
+    else:
+        l_subject_str = l_msg[0][0];
+    if l_subject_str in g_cmd_list:
+        l_pop_conn.dele(l_pop_conn.stat()[0]);#删除处理过的邮件
+    l_pop_conn.quit();
+    return l_subject_str;
+   
+#处理命令 
+def hand_cmd(i_cmd):
+    if "ping" == i_cmd.strip():
+        os.system("ping www.baidu.com");
+    elif "注销" == i_cmd.strip():
+        os.system("logoff");
+    elif "时间" == i_cmd.strip():
+        os.system("time /t");
+    
+def main():
+    while(1):
+        try:
+            hand_cmd(rcv_mail());
+            sleep(10);
+        except:
+            pass;
+        
+if __name__ == "__main__":
+    main();
